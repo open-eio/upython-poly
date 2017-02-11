@@ -3,7 +3,7 @@
   <head> <title>Polybot Test</title>
   </head>
   <body> <h1>Polybot Test</h1>
-    <button id="btn1" pin_type="digital_out" pin_num="2" pin_value=false>board LED</button>
+    <button id="btn1" pin_type="digital_out" pin_num="2" pin_value=1>board LED</button>
     <div id="humid">null</div><div id="temp">null</div>
   </body>
   <script>
@@ -20,7 +20,7 @@
         var pin_value = resp.pin_value;
         console.log("GET /pins request completed, response:", resp);
         btn1.setAttribute("pin_value",pin_value);
-        btn1.style.background = pin_value? 'lightgray':'lightblue';
+        btn1.style.background = ((pin_value != 0)? 'lightgray':'lightblue');
       });
       req.send(null);
       //update temp and humid
@@ -37,18 +37,16 @@
           //this is a digital output pin
           var pin_num   = event.target.getAttribute("pin_num");
           var pin_value = event.target.getAttribute("pin_value");
-          console.log("\tpin_value="+pin_value);
-          var pin_value = !pin_value;  //FIXME
-          console.log("\t!pin_value="+pin_value); //FIXME shoul be inverted
           //make a request to toggle the pin state
           var req = new XMLHttpRequest();
-          req.open("PUT", "/pins?pin_num=" +  pin_num   +
-                          "&pin_type="     +  pin_type  +
-                          "&pin_value="    +  pin_value,
-                   true)
+          var req_path = "/pins?pin_num="  +  String(pin_num)   +
+                          "&pin_type="     +  String(pin_type)  +
+                          "&pin_value="    +  ((pin_value != 0)?"0":"1"); //toggles pin state
+          console.log("requesting PUT " + req_path);
+          req.open("PUT", req_path, true)
           req.addEventListener("load", function() {
             var resp = JSON.parse(req.responseText);
-            var pin_value = Boolean(resp.pin_value);
+            var pin_value = resp.pin_value;
             console.log("PUT /pins request completed, response:", resp);
             event.target.setAttribute("pin_value",pin_value);
             event.target.style.background = pin_value? 'lightgray':'lightblue';
@@ -64,7 +62,7 @@
       req.open("GET", "/am2315",true)
       req.addEventListener("load", function() {
         var resp = JSON.parse(req.responseText);
-        console.log("GET /am215 request completed, response:", resp);
+        console.log("GET /am2315 request completed, response:", resp);
         var humid_div = document.querySelector("#humid");
         var temp_div  = document.querySelector("#temp");
         humid_div.innerHTML = resp.humid + "% RH";

@@ -131,7 +131,8 @@ class PolyServer(WebApp):
         pin_value = None
         pin = PINS[pin_num]
         if context.request.method == 'PUT':
-            pin_value = json.loads(context.request.args['pin_value']) #converts 'false' to False, 'true' to True
+            pin_value = json.loads(context.request.args['pin_value']) #converts to int
+            pin_value = bool(pin_value)
             if pin_type == "digital_out":
                 if DEBUG:
                     print("SETTING pin_type = 'digital_out' to pin_value = %s" % pin_value)
@@ -165,6 +166,7 @@ class PolyServer(WebApp):
                     print("USING HARDWARE INTERFACE machine.Pin")
                 pin = PINS[pin_num]
                 pin_value = pin.value()
+        pin_value = 1 if pin_value else 0
         resp = {'pin_num': pin_num, 'pin_value': pin_value}
         context.send_json_response(resp)
         
