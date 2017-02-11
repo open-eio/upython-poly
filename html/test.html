@@ -36,13 +36,13 @@
           var pin_num   = event.target.getAttribute("pin_num");
           var pin_value = event.target.getAttribute("pin_value");
           console.log("\tpin_value="+pin_value);
-          pin_value = !pin_value;
-          console.log("\t!pin_value="+pin_value);
+          pin_value = !pin_value;  //FIXME
+          console.log("\t!pin_value="+pin_value); //FIXME shoul be inverted
           //make a request to toggle the pin state
           var req = new XMLHttpRequest();
           req.open("PUT", "/pins?pin_num=" +  pin_num   +
                           "&pin_type="     +  pin_type  +
-                          "&pin_value="    + !pin_value,
+                          "&pin_value="    +  pin_value,
                    true)
           req.addEventListener("load", function() {
             var resp = JSON.parse(req.responseText);
