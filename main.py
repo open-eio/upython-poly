@@ -14,8 +14,8 @@ msg = uart.read(1)
 
 if msg is None:
     print("timed out.")
-    print("Loading pinserver_app")
-    import pinserver_app
+    print("Loading poly_app")
+    import poly_app
 else:
     print(msg)
     print("Rerouting to REPL")

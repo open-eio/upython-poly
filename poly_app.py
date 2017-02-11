@@ -40,7 +40,7 @@ if DEBUG:
 #-------------------------------------------------------------------------------
 PINS = OrderedDict()
 try:
-    import board #CircuitPython specific
+    import board, nativeio #CircuitPython specific
     PINS[0]  = board.GPIO0
     PINS[2]  = board.GPIO2
     PINS[4]  = board.GPIO4
@@ -50,12 +50,12 @@ try:
     PINS[14] = board.GPIO14
     PINS[15] = board.GPIO15
     #set all pins to input, safest state
-    for pin_num, board_pin in PINS.item():
-        with nativeio.DigitalInOut(pin) as d_in:
+    for pin_num, board_pin in PINS.items():
+        with nativeio.DigitalInOut(board_pin) as d_in:
             d_in.switch_to_input()
-    with nativeio.DigitalInOut(PINS[2]) as d_out:
-            d_out.switch_to_output()
-            d_out.value = True
+#    with nativeio.DigitalInOut(PINS[2]) as d_out:
+#            d_out.switch_to_output()
+#            d_out.value =
 except ImportError:
     try:
         import machine #micropython specific
@@ -80,8 +80,16 @@ class PolyServer(WebApp):
                 mem_info()
             except ImportError:
                 pass
+                
         #open the template files
-        index_tmp   = LazyTemplate.from_file("html/index.html")
+        def gen_index_tmp(chunksize = 64):
+            with open("html/index.html", 'r') as f:
+                while True:
+                    chunk = f.read(chunksize)
+                    if not chunk:
+                        return
+                    yield chunk
+        index_tmp = gen_index_tmp()
         #finally render the view
         context.render_template(index_tmp)
         
@@ -118,7 +126,7 @@ class PolyServer(WebApp):
                     import nativeio
                     if DEBUG:
                         print("USING HARDWARE INTERFACE nativeio.DigitalInOut")
-                    with nativeio.DigitalInOut(pin) as d_out:
+                    with nativeio.DigitalInOut(PINS[pin_num]) as d_out:
                         d_out.switch_to_output()
                         d_out.value = pin_value
                 except ImportError:
@@ -135,7 +143,7 @@ class PolyServer(WebApp):
                 import nativeio
                 if DEBUG:
                     print("USING HARDWARE INTERFACE nativeio.DigitalInOut")
-                with nativeio.DigitalInOut(pin) as d:
+                with nativeio.DigitalInOut(PINS[pin_num]) as d:
                     pin_value = d.value()
             except ImportError:
                 #works in micropython and PC
