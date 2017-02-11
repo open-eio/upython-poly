@@ -63,7 +63,15 @@ except ImportError:
         import mock_machine as machine #a substitute for PC testing
     pin_numbers = (0, 2, 4, 5, 12, 13, 14, 15)
     PINS = OrderedDict((i,machine.Pin(i, machine.Pin.IN)) for i in pin_numbers)
-
+    
+#configure humidity/temperature sensor interface
+try:
+    from am2315 import AM2315
+except ImportError:
+    from mock_am2315 import AM2315
+    
+ht_sensor = AM2315()
+ht_sensor.init()
 
 ################################################################################
 # APPLICATION CODE
@@ -93,14 +101,20 @@ class PolyServer(WebApp):
         #finally render the view
         context.render_template(index_tmp)
         
+    @route("/test", methods=['GET'])
+    def index(self, context):
+        global DEBUG
         if DEBUG:
-            print("LEAVING ROUTE HANDLER name='%s' " % ('index'))
+            print("INSIDE ROUTE HANDLER name='%s' " % ('index'))
             try:
                 from micropython import mem_info
                 mem_info()
             except ImportError:
                 pass
-                
+        tmp = LazyTemplate.from_file("html/test.html")
+        #finally render the view
+        context.render_template(tmp)
+    
     @route("/pins", methods=['GET','PUT'])
     def pins(self, context):
         global DEBUG
@@ -153,6 +167,23 @@ class PolyServer(WebApp):
                 pin_value = pin.value()
         resp = {'pin_num': pin_num, 'pin_value': pin_value}
         context.send_json_response(resp)
+        
+    @route("/am2315", methods=['GET'])
+    def am2315(self, context):
+        global DEBUG
+        if DEBUG:
+            print("INSIDE ROUTE HANDLER name='%s' " % ('am2315'))
+            print("\trequest.args: %s" % context.request.args)
+            try:
+                from micropython import mem_info
+                mem_info()
+            except ImportError:
+                pass
+        d = {}
+        #acquire a humidity and temperature sample
+        ht_sensor.get_data(d)  #adds fields 'humid', 'temp'
+        print("SENDING DATA AS JSON: %r" % d)
+        context.send_json_response(d)
         
 ################################################################################
 # MAIN

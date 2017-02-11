@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head> <title>Polybot Test</title>
+  </head>
+  <body> <h1>Polybot</h1>
+    <button id="btn1" pin_type="digital_out" pin_num="2" pin_value=false>board LED</button>
+    <div id="humid">null</div><div id="temp">null</div>
+  </body>
+  <script>
+    //on page load query the current pin value through AJAX API
+    window.addEventListener("load", function(event) {
+      var btn1 = document.querySelector("#btn1");
+      //request the pin state
+      var req = new XMLHttpRequest();
+      req.open("GET", "/pins?pin_num=" + btn1.getAttribute("pin_num") +
+                           "&pin_type="+ btn1.getAttribute("pin_type"),
+        true);
+      req.addEventListener("load", function() {
+        var resp = JSON.parse(req.responseText);
+        var pin_value = resp.pin_value;
+        console.log("GET /pins request completed, response:", resp);
+        btn1.setAttribute("pin_value",pin_value);
+        btn1.style.background = pin_value? 'lightgray':'lightblue';
+      });
+      req.send(null);
+    });
+    //handle any clicks
+    document.body.addEventListener("click", function(event) {
+      if (event.target.nodeName == "BUTTON"){
+        //clicked on a button, find out which...
+        var btn_id   = event.target.getAttribute("id");
+        var pin_type = event.target.getAttribute("pin_type");
+        console.log("Clicked", btn_id, pin_type);
+        if (pin_type == "digital_out"){
+          //this is a digital output pin
+          var pin_num   = event.target.getAttribute("pin_num");
+          var pin_value = event.target.getAttribute("pin_value");
+          console.log("\tpin_value="+pin_value);
+          pin_value = !pin_value;
+          console.log("\t!pin_value="+pin_value);
+          //make a request to toggle the pin state
+          var req = new XMLHttpRequest();
+          req.open("PUT", "/pins?pin_num=" +  pin_num   +
+                          "&pin_type="     +  pin_type  +
+                          "&pin_value="    + !pin_value,
+                   true)
+          req.addEventListener("load", function() {
+            var resp = JSON.parse(req.responseText);
+            var pin_value = Boolean(resp.pin_value);
+            console.log("PUT /pins request completed, response:", resp);
+            event.target.setAttribute("pin_value",pin_value);
+            event.target.style.background = pin_value? 'lightgray':'lightblue';
+          });
+          req.send(null);
+        }
+      }
+    });
+    //get temperature and humidity every 5 seconds
+    setInterval(fetchAM2315, 5000);
+    function fetchAM2315(){
+      //make a request to toggle the pin state
+      var req = new XMLHttpRequest();
+      req.open("GET", "/am2315",true)
+      req.addEventListener("load", function() {
+        var resp = JSON.parse(req.responseText);
+        console.log("GET /am215 request completed, response:", resp);
+        var humid_div = document.querySelector("#humid");
+        var temp_div  = document.querySelector("#temp");
+      });
+      req.send(null);
+    }
+
+  </script>
+</html>
