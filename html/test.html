@@ -2,7 +2,7 @@
 <html>
   <head> <title>Polybot Test</title>
   </head>
-  <body> <h1>Polybot</h1>
+  <body> <h1>Polybot Test</h1>
     <button id="btn1" pin_type="digital_out" pin_num="2" pin_value=false>board LED</button>
     <div id="humid">null</div><div id="temp">null</div>
   </body>
@@ -23,6 +23,8 @@
         btn1.style.background = pin_value? 'lightgray':'lightblue';
       });
       req.send(null);
+      //update temp and humid
+      fetchAM2315();
     });
     //handle any clicks
     document.body.addEventListener("click", function(event) {
@@ -36,7 +38,7 @@
           var pin_num   = event.target.getAttribute("pin_num");
           var pin_value = event.target.getAttribute("pin_value");
           console.log("\tpin_value="+pin_value);
-          pin_value = !pin_value;  //FIXME
+          var pin_value = !pin_value;  //FIXME
           console.log("\t!pin_value="+pin_value); //FIXME shoul be inverted
           //make a request to toggle the pin state
           var req = new XMLHttpRequest();
@@ -56,7 +58,6 @@
       }
     });
     //get temperature and humidity every 5 seconds
-    setInterval(fetchAM2315, 5000);
     function fetchAM2315(){
       //make a request to toggle the pin state
       var req = new XMLHttpRequest();
@@ -66,9 +67,12 @@
         console.log("GET /am215 request completed, response:", resp);
         var humid_div = document.querySelector("#humid");
         var temp_div  = document.querySelector("#temp");
+        humid_div.innerHTML = resp.humid + "% RH";
+        temp_div.innerHTML  = resp.temp + " deg C";
       });
       req.send(null);
     }
+    setInterval(fetchAM2315, 5000);
 
   </script>
 </html>

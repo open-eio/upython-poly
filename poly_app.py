@@ -120,7 +120,7 @@ class PolyServer(WebApp):
         global DEBUG
         if DEBUG:
             print("INSIDE ROUTE HANDLER name='%s' " % ('pins'))
-            print("\trequest.args: %s" % context.request.args)
+            print("\trequest.args: %r" % (context.request.args,))
             try:
                 from micropython import mem_info
                 mem_info()
@@ -158,7 +158,7 @@ class PolyServer(WebApp):
                 if DEBUG:
                     print("USING HARDWARE INTERFACE nativeio.DigitalInOut")
                 with nativeio.DigitalInOut(PINS[pin_num]) as d:
-                    pin_value = d.value()
+                    pin_value = d.value
             except ImportError:
                 #works in micropython and PC
                 if DEBUG:
@@ -173,7 +173,7 @@ class PolyServer(WebApp):
         global DEBUG
         if DEBUG:
             print("INSIDE ROUTE HANDLER name='%s' " % ('am2315'))
-            print("\trequest.args: %s" % context.request.args)
+            print("\trequest.args: %r" % (context.request.args,))
             try:
                 from micropython import mem_info
                 mem_info()
@@ -182,7 +182,7 @@ class PolyServer(WebApp):
         d = {}
         #acquire a humidity and temperature sample
         ht_sensor.get_data(d)  #adds fields 'humid', 'temp'
-        print("SENDING DATA AS JSON: %r" % d)
+        print("SENDING DATA AS JSON: %r" % (d,))
         context.send_json_response(d)
         
 ################################################################################
