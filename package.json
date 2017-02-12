@@ -15,7 +15,7 @@
     "livereload-css": "livereload ./build-temp/build.css",
     "dev-file-server": "http-server build-temp -p 3000",
     "dev-local": "NODE_ENV=development node map-template.js && npm run template-dev && concurrently --kill-others 'npm run watch-js' 'npm run watch-css' 'npm run dev-file-server' 'npm run livereload-css' 'python3 poly_app.py'",
-    "dev-remote": "REMOTE_SERVER=true node map-template.js && npm run template-dev && concurrently --kill-others 'npm run watch-js' 'npm run watch-css' 'npm run dev-file-server' 'npm run livereload-css'",
+    "dev-remote": "NODE_ENV=development node map-template.js && npm run template-dev && concurrently --kill-others 'REMOTE_SERVER=true npm run watch-js' 'npm run watch-css' 'npm run dev-file-server' 'npm run livereload-css'",
     "build": "NODE_ENV=production npm run build-js && npm run build-css && npm run postbuild-css && NODE_ENV=production node map-template.js && npm run template"
   },
   "author": "",
