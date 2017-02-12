@@ -4,6 +4,9 @@
   </head>
   <body> <h1>Polybot Test</h1>
     <button id="btn1" pin_type="digital_out" pin_num="2" pin_value=1>board LED</button>
+    <div><a href="/logs/PolyServer.yaml">goto PolyServer log</a></div>
+    <div><button id="btn2">throw Exception</button></div>
+    <div><button id="btn3">clear Logs</button></div>
     <div id="humid">null</div><div id="temp">null</div>
   </body>
   <script>
@@ -31,26 +34,42 @@
       if (event.target.nodeName == "BUTTON"){
         //clicked on a button, find out which...
         var btn_id   = event.target.getAttribute("id");
-        var pin_type = event.target.getAttribute("pin_type");
-        console.log("Clicked", btn_id, pin_type);
-        if (pin_type == "digital_out"){
-          //this is a digital output pin
-          var pin_num   = event.target.getAttribute("pin_num");
-          var pin_value = event.target.getAttribute("pin_value");
-          //make a request to toggle the pin state
+        console.log("Clicked", btn_id);
+        if (btn_id == "btn1"){
+          var pin_type = event.target.getAttribute("pin_type");
+          if (pin_type == "digital_out"){
+            //this is a digital output pin
+            var pin_num   = event.target.getAttribute("pin_num");
+            var pin_value = event.target.getAttribute("pin_value");
+            //make a request to toggle the pin state
+            var req = new XMLHttpRequest();
+            var req_path = "/pins?pin_num="  +  String(pin_num)   +
+                            "&pin_type="     +  String(pin_type)  +
+                            "&pin_value="    +  ((pin_value != 0)?"0":"1"); //toggles pin state
+            console.log("requesting PUT " + req_path);
+            req.open("PUT", req_path, true);
+            req.addEventListener("load", function() {
+              var resp = JSON.parse(req.responseText);
+              var pin_value = resp.pin_value;
+              console.log("PUT /pins request completed, response:", resp);
+              event.target.setAttribute("pin_value",pin_value);
+              event.target.style.background = pin_value? 'lightgray':'lightblue';
+            });
+            req.send(null);
+          }
+        } else if (btn_id == "btn2"){
+          //make a request to throw an Exception on the server
           var req = new XMLHttpRequest();
-          var req_path = "/pins?pin_num="  +  String(pin_num)   +
-                          "&pin_type="     +  String(pin_type)  +
-                          "&pin_value="    +  ((pin_value != 0)?"0":"1"); //toggles pin state
+          var req_path = "/exc";
           console.log("requesting PUT " + req_path);
-          req.open("PUT", req_path, true)
-          req.addEventListener("load", function() {
-            var resp = JSON.parse(req.responseText);
-            var pin_value = resp.pin_value;
-            console.log("PUT /pins request completed, response:", resp);
-            event.target.setAttribute("pin_value",pin_value);
-            event.target.style.background = pin_value? 'lightgray':'lightblue';
-          });
+          req.open("PUT", req_path, true);
+          req.send(null);
+        } else if (btn_id == "btn3"){
+          //make a request to throw an Exception on the server
+          var req = new XMLHttpRequest();
+          var req_path = "/logs/PolyServer.yaml";
+          console.log("requesting DELETE " + req_path);
+          req.open("DELETE", req_path, true);
           req.send(null);
         }
       }

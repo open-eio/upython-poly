@@ -88,32 +88,49 @@ class PolyServer(WebApp):
                 mem_info()
             except ImportError:
                 pass
-                
-        #open the template files
-        def gen_index_tmp(chunksize = 64):
-            with open("html/index.html", 'r') as f:
-                while True:
-                    chunk = f.read(chunksize)
-                    if not chunk:
-                        return
-                    yield chunk
-        index_tmp = gen_index_tmp()
-        #finally render the view
-        context.render_template(index_tmp)
+        context.send_file("html/index.html")
         
     @route("/test", methods=['GET'])
-    def index(self, context):
+    def test(self, context):
         global DEBUG
         if DEBUG:
-            print("INSIDE ROUTE HANDLER name='%s' " % ('index'))
+            print("INSIDE ROUTE HANDLER name='%s' " % ('test'))
             try:
                 from micropython import mem_info
                 mem_info()
             except ImportError:
                 pass
-        tmp = LazyTemplate.from_file("html/test.html")
-        #finally render the view
-        context.render_template(tmp)
+        context.send_file("html/test.html")
+        
+    @route("/logs/PolyServer.yaml", methods=['GET','DELETE'])
+    def logs(self, context):
+        global DEBUG
+        if DEBUG:
+            print("INSIDE ROUTE HANDLER name='%s' " % ('logs/PolyServer.yaml'))
+            try:
+                from micropython import mem_info
+                mem_info()
+            except ImportError:
+                pass
+        if context.request.method == 'GET':
+            context.send_file("logs/PolyServer.yaml")
+        elif context.request.method == 'DELETE':
+            os.remove("logs/PolyServer.yaml")
+            open("logs/PolyServer.yaml",'w').close()
+            context.send_json({})
+        
+    @route("/exc", methods=['PUT'])
+    def exc(self, context):
+        global DEBUG
+        if DEBUG:
+            print("INSIDE ROUTE HANDLER name='%s' " % ('exc'))
+            try:
+                from micropython import mem_info
+                mem_info()
+            except ImportError:
+                pass
+        context.send_json({})
+        raise Exception("this is a test")
     
     @route("/pins", methods=['GET','PUT'])
     def pins(self, context):
@@ -168,7 +185,7 @@ class PolyServer(WebApp):
                 pin_value = pin.value()
         pin_value = 1 if pin_value else 0
         resp = {'pin_num': pin_num, 'pin_value': pin_value}
-        context.send_json_response(resp)
+        context.send_json(resp)
         
     @route("/am2315", methods=['GET'])
     def am2315(self, context):
@@ -185,7 +202,7 @@ class PolyServer(WebApp):
         #acquire a humidity and temperature sample
         ht_sensor.get_data(d)  #adds fields 'humid', 'temp'
         print("SENDING DATA AS JSON: %r" % (d,))
-        context.send_json_response(d)
+        context.send_json(d)
         
 ################################################################################
 # MAIN
