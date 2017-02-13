@@ -13,8 +13,8 @@ except ImportError:
 
 #-------------------------------------------------------------------------------
 # PAWPAW PACKAGE IMPORTS
-from pawpaw import WebApp, Router, route, Template, LazyTemplate
-
+from pawpaw import WebApp, Router, route, Template, LazyTemplate, AutoTreeFormat
+from pawpaw import auto_tree_format
 #-------------------------------------------------------------------------------
 # LOCAL IMPORTS
 
@@ -75,6 +75,7 @@ except ImportError:
 ht_sensor = AM2315()
 ht_sensor.init()
 
+
 ################################################################################
 # APPLICATION CODE
 #-------------------------------------------------------------------------------
@@ -103,6 +104,35 @@ class PolyServer(WebApp):
             except ImportError:
                 pass
         context.send_file("html/test.html")
+        
+    @route("/config", methods=['GET','POST'])
+    def config(self, context):
+        global DEBUG
+        if DEBUG:
+            print("INSIDE ROUTE HANDLER name='%s' " % ('/config'))
+            try:
+                from micropython import mem_info
+                mem_info()
+            except ImportError:
+                pass
+                
+        config_filename = "SECRET_CONFIG.json"
+        comment = ""
+                
+        if context.request.method == 'POST':
+            body = context.request.body
+            form = auto_tree_format.parse_form_url(body)
+            if DEBUG:
+                print("CONFIG FORM: %r" % (form,))
+            comment = "'%s' has been updated" % config_filename
+            with open(config_filename,'w') as f:
+                f.write(json.dumps(form))
+            
+        ATF = AutoTreeFormat.from_json_file(config_filename)
+        gen_form = ATF.gen_html_form()
+        tmp = LazyTemplate.from_file("html/config_form.html", endline = "", rstrip_lines = False)
+        tmp.format(form_content = gen_form, comment = comment)
+        context.render_template(tmp)
         
     @route("/logs/PolyServer.yaml", methods=['GET','DELETE'])
     def logs(self, context):
