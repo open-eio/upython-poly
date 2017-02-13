@@ -1,3 +1,80 @@
-body{
-  background-color: green;
+@import 'normalize';
+@import 'poly';
+
+// Header
+$header-height: 65px;
+.header-inner{
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px $element-padding 3px;
+  flex-grow: 1;
+}
+
+.header{
+  height: $header-height;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  width: 100%;
+  top: 0px;
+  z-index: 1000000;
+}
+
+.header-links{
+  *:not(:first-child){
+    margin-left: 8px;
+  }
+}
+
+.header-spacer{
+  height: calc(#{$header-height} + 5vh);
+  max-height: calc(#{$header-height} + 35px);
+  width: 100%;
+}
+
+.header-error{
+  position: fixed;
+  width: 100%;
+  height: $header-height;
+  background-color: $red;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-left: $element-padding;
+  padding-right: 34px;
+  font-size: 14px;
+  transform-origin: left top;
+}
+
+
+.header-error-transition-enter {
+  transform: rotateX(90deg);
+}
+
+.header-error-transition-enter.header-error-transition-enter-active {
+  transform: rotateX(0deg);
+  transition: transform 300ms ease-in;
+}
+
+.header-error-transition-leave {
+  transform: rotateX(0deg);
+}
+
+.header-error-transition-leave.header-error-transition-leave-active {
+  transform: rotateX(90deg);
+  transition: transform 300ms ease-in;
+}
+
+
+.header-error-dismiss{
+  &:before{
+    position: absolute;
+    top: 25px;
+    right: 12px;
+    font-size: 20px;
+    cursor: pointer;
+  }
 }

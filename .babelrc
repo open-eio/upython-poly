@@ -7,6 +7,13 @@
     }]
   ],
   "plugins": [
-    ["transform-react-jsx", { "pragma":"h" }]
+    ["transform-react-jsx"],
+    ["module-resolver", {
+        "root": ["."],
+        "alias": {
+            "react": "preact-compat",
+            "react-dom": "preact-compat"
+        }
+    }]
   ]
 }

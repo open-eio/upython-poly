@@ -1,2 +1,3 @@
 #!/bin/bash -x
-screen /dev/ttyUSB0 115200
+source .env
+screen $FEATHER_ADDRESS 115200
