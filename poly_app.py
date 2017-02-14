@@ -72,6 +72,11 @@ try:
 except ImportError:
     from mock_am2315 import AM2315
     
+try:
+    from micropython import mem_info
+except ImportError:
+    mem_info = lambda: None
+    
 ht_sensor = AM2315()
 ht_sensor.init()
 
@@ -83,50 +88,24 @@ ht_sensor.init()
 class PolyServer(WebApp):
     @route("/", methods=['GET'])
     def index(self, context):
-        global DEBUG
-        if DEBUG:
-            print("INSIDE ROUTE HANDLER name='%s' " % ('index'))
-            try:
-                from micropython import mem_info
-                mem_info()
-            except ImportError:
-                pass
         context.send_file("html/index.html")
         
     @route("/test", methods=['GET'])
     def test(self, context):
-        global DEBUG
-        if DEBUG:
-            print("INSIDE ROUTE HANDLER name='%s' " % ('test'))
-            try:
-                from micropython import mem_info
-                mem_info()
-            except ImportError:
-                pass
         context.send_file("html/test.html")
         
     @route("/config", methods=['GET','POST'])
     def config(self, context):
-        global DEBUG
-        if DEBUG:
-            print("INSIDE ROUTE HANDLER name='%s' " % ('/config'))
-            try:
-                from micropython import mem_info
-                mem_info()
-            except ImportError:
-                pass
-                
         config_filename = "SECRET_CONFIG.json"
         comment = ""
                 
         if context.request.method == 'POST':
             body = context.request.body
             form = auto_tree_format.parse_form_url(body)
-            if DEBUG:
-                print("CONFIG FORM: %r" % (form,))
             comment = "'%s' has been updated" % config_filename
             with open(config_filename,'w') as f:
                 f.write(json.dumps(form))
+            gc.collect()
             
         ATF = AutoTreeFormat.from_json_file(config_filename)
         gen_form = ATF.gen_html_form()
@@ -136,14 +115,6 @@ class PolyServer(WebApp):
         
     @route("/logs/PolyServer.yaml", methods=['GET','DELETE'])
     def logs(self, context):
-        global DEBUG
-        if DEBUG:
-            print("INSIDE ROUTE HANDLER name='%s' " % ('logs/PolyServer.yaml'))
-            try:
-                from micropython import mem_info
-                mem_info()
-            except ImportError:
-                pass
         if context.request.method == 'GET':
             context.send_file("logs/PolyServer.yaml")
         elif context.request.method == 'DELETE':
@@ -153,28 +124,11 @@ class PolyServer(WebApp):
         
     @route("/exc", methods=['PUT'])
     def exc(self, context):
-        global DEBUG
-        if DEBUG:
-            print("INSIDE ROUTE HANDLER name='%s' " % ('exc'))
-            try:
-                from micropython import mem_info
-                mem_info()
-            except ImportError:
-                pass
         context.send_json({})
         raise Exception("this is a test")
     
     @route("/pins", methods=['GET','PUT'])
     def pins(self, context):
-        global DEBUG
-        if DEBUG:
-            print("INSIDE ROUTE HANDLER name='%s' " % ('pins'))
-            print("\trequest.args: %r" % (context.request.args,))
-            try:
-                from micropython import mem_info
-                mem_info()
-            except ImportError:
-                pass
         pin_num  = int(context.request.args['pin_num'])
         pin_type = context.request.args['pin_type']
         pin_value = None
@@ -183,40 +137,10 @@ class PolyServer(WebApp):
             pin_value = json.loads(context.request.args['pin_value']) #converts to int
             pin_value = bool(pin_value)
             if pin_type == "digital_out":
-                if DEBUG:
-                    print("SETTING pin_type = 'digital_out' to pin_value = %s" % pin_value)
-                try:
-#                    #CircuitPython specific
-#                    import nativeio
-#                    if DEBUG:
-#                        print("USING HARDWARE INTERFACE nativeio.DigitalInOut")
-#                    with nativeio.DigitalInOut(PINS[pin_num]) as d_out:
-#                        d_out.switch_to_output()
-#                        d_out.value = pin_value
-                    if DEBUG:
-                        print("USING HARDWARE INTERFACE machine.Pin")
-                    PINS[pin_num] = pin = machine.Pin(pin_num,machine.Pin.OUT)
-                    pin.value(pin_value)
-                except ImportError:
-                    #works in micropython and PC
-                    if DEBUG:
-                        print("USING HARDWARE INTERFACE machine.Pin")
-                    PINS[pin_num] = pin = machine.Pin(pin_num,machine.Pin.OUT)
-                    pin.value(pin_value)
+                PINS[pin_num] = pin = machine.Pin(pin_num,machine.Pin.OUT)
+                pin.value(pin_value)
         elif context.request.method == 'GET':
-            if DEBUG:
-                print("GETTING pin_type = '%s'" % pin_type)
-#            try:
-#                #CircuitPython specific
-#                import nativeio
-#                if DEBUG:
-#                    print("USING HARDWARE INTERFACE nativeio.DigitalInOut")
-#                with nativeio.DigitalInOut(PINS[pin_num]) as d:
-#                    pin_value = d.value
-#            except ImportError:
             #works in micropython and PC
-            if DEBUG:
-                print("USING HARDWARE INTERFACE machine.Pin")
             pin = PINS[pin_num]
             pin_value = pin.value()
         pin_value = 1 if pin_value else 0
@@ -225,19 +149,9 @@ class PolyServer(WebApp):
         
     @route("/am2315", methods=['GET'])
     def am2315(self, context):
-        global DEBUG
-        if DEBUG:
-            print("INSIDE ROUTE HANDLER name='%s' " % ('am2315'))
-            print("\trequest.args: %r" % (context.request.args,))
-            try:
-                from micropython import mem_info
-                mem_info()
-            except ImportError:
-                pass
         d = {}
         #acquire a humidity and temperature sample
         ht_sensor.get_data(d)  #adds fields 'humid', 'temp'
-        print("SENDING DATA AS JSON: %r" % (d,))
         context.send_json(d)
         
 ################################################################################
@@ -251,6 +165,7 @@ gc.collect()
 
 app = PolyServer(server_addr = SERVER_ADDR,
                  server_port = SERVER_PORT,
+                 socket_timeout = 10.0,
                )
 #if DEBUG:
 #    print("APP HANDLER REGISTRY: %s" % app.handler_registry)
