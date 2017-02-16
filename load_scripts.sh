@@ -11,5 +11,6 @@ ampy -p /dev/ttyUSB0 -b 115200 put time_manager.py
 ampy -p /dev/ttyUSB0 -b 115200 put dump_logs.py
 ampy -p /dev/ttyUSB0 -b 115200 put am2315.py
 ampy -p /dev/ttyUSB0 -b 115200 put poly_app.py
+ampy -p /dev/ttyUSB0 -b 115200 put loop.py
 ampy -p /dev/ttyUSB0 -b 115200 put main.py
 ampy -p /dev/ttyUSB0 -b 115200 put boot.py

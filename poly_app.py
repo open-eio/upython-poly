@@ -129,12 +129,12 @@ class PolyServer(WebApp):
     
     @route("/pins", methods=['GET','PUT'])
     def pins(self, context):
-        pin_num  = int(context.request.args['pin_num'])
-        pin_type = context.request.args['pin_type']
+        pin_num  = int(context.request.args['pin_num'][0])
+        pin_type = context.request.args['pin_type'][0]
         pin_value = None
         pin = PINS[pin_num]
         if context.request.method == 'PUT':
-            pin_value = json.loads(context.request.args['pin_value']) #converts to int
+            pin_value = json.loads(context.request.args['pin_value'][0]) #converts to int
             pin_value = bool(pin_value)
             if pin_type == "digital_out":
                 PINS[pin_num] = pin = machine.Pin(pin_num,machine.Pin.OUT)
@@ -154,6 +154,19 @@ class PolyServer(WebApp):
         ht_sensor.get_data(d)  #adds fields 'humid', 'temp'
         context.send_json(d)
         
+    def run(self, control_loop_period = 10.0):
+        import loop
+        t0 = time.monotonic()
+        t_last_ctrl_loop = time.monotonic()
+        while True:
+            #handle any waiting requests
+            has_timedout = self.serve_once()
+            t_now = time.monotonic()
+            if (t_now - t_last_ctrl_loop) > control_loop_period:
+                print("RUNNING CONTROL LOOP")
+                loop.run(t_now)
+                t_last_ctrl_loop = t_now
+        
 ################################################################################
 # MAIN
 #-------------------------------------------------------------------------------
@@ -165,7 +178,7 @@ gc.collect()
 
 app = PolyServer(server_addr = SERVER_ADDR,
                  server_port = SERVER_PORT,
-                 socket_timeout = 10.0,
+                 socket_timeout = 1.0,
                )
 #if DEBUG:
 #    print("APP HANDLER REGISTRY: %s" % app.handler_registry)
@@ -173,4 +186,4 @@ app = PolyServer(server_addr = SERVER_ADDR,
     #h({})
 # Activate the server; this will keep running until you
 # interrupt the program with Ctrl-C
-app.serve_forever()
+app.run()
