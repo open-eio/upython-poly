@@ -27,6 +27,7 @@ import platform_setup
 SERVER_ADDR = platform_setup.SERVER_ADDR
 SERVER_PORT = platform_setup.SERVER_PORT
 DEBUG       = platform_setup.DEBUG
+DEFAULT_LOOP_PY_TIMEOUT_MS = 5000
 
 if DEBUG:
     print("INSIDE MODULE name='%s' " % ('poly_app',))
@@ -160,12 +161,42 @@ class PolyServer(WebApp):
         t_last_ctrl_loop = time.monotonic()
         while True:
             #handle any waiting requests
-            has_timedout = self.serve_once()
+            server_has_timedout = self.serve_once()
             t_now = time.monotonic()
             if (t_now - t_last_ctrl_loop) > control_loop_period:
-                print("RUNNING CONTROL LOOP")
-                loop.run(t_now)
-                t_last_ctrl_loop = t_now
+                try:
+                    print("RUNNING CONTROL LOOP")
+                    self.init_loop_timeout()
+                    loop.run(t_now)
+                    self.deinit_loop_timeout()
+                    t_last_ctrl_loop = t_now
+                except Exception as exc:
+                    msg = "Exception caught in 'PolyServer.run' while running loop.py"
+                    #print out message and exception/traceback
+                    print("*"*40,file=sys.stderr)
+                    print("* EXCEPTION", file=sys.stderr)
+                    print("-"*40,file=sys.stderr)
+                    print(msg, file = sys.stderr)
+                    print_exception(exc, sys.stderr)
+                    print("*"*40,file=sys.stderr)
+                    #log it as well
+                    logger = self.get_logger()
+                    with logger as entry:
+                        entry.write(msg)
+                        entry.write_exception(exc)
+                finally:
+                
+    def init_loop_timeout(self, period = DEFAULT_LOOP_PY_TIMEOUT_MS):
+        def timeout_callback(t):
+            machine.reset()
+
+        self._loop_timer = machine.Timer(0)
+        self._loop_timer.init(period   = period,
+                              mode     = machine.Timer.ONE_SHOT,
+                              callback = timeout_callback)
+        
+    def deinit_loop_timeout(self):
+        self._loop_timer.deinit()
         
 ################################################################################
 # MAIN

@@ -9,7 +9,7 @@ time.sleep(1.0)
 
 uart = machine.UART(0, 115200)# init with given baudrate
 
-uart.init(115200, bits=8, parity=None, stop=1, timeout=5000) # init with given parameters
+uart.init(115200, bits=8, parity=None, stop=1, timeout=1000) # init with given parameters
 msg = uart.read(1)
 
 if msg is None:
