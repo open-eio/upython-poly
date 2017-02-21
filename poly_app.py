@@ -1,6 +1,19 @@
 ################################################################################
 # STANDARD LIB IMPORTS
 import sys, os, time, gc
+
+try:
+    import sys
+    from sys import print_exception #micropython specific
+except ImportError:
+    import traceback
+    print_exception = lambda exc, file_: traceback.print_exc(file=file_)
+
+try:
+    from time import monotonic as time_monotonic
+except ImportError:
+    time_monotonic = lambda: time.ticks_us()/1e6
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -10,7 +23,14 @@ try:
     import json
 except ImportError:
     import ujson as json #micropython specific
-
+    
+try:
+    from micropython import schedule_exc
+    # New feature not in official release! Allows soft-IRQs for timer to throw
+    # exceptions in main program.  We use this to timeout user supplied loop.py
+    # see this micropython branch: https://github.com/dpgeorge/micropython/tree/scheduler
+except ImportError:
+    schedule_exc = lambda arg: None
 #-------------------------------------------------------------------------------
 # PAWPAW PACKAGE IMPORTS
 from pawpaw import WebApp, Router, route, Template, LazyTemplate, AutoTreeFormat
@@ -27,7 +47,7 @@ import platform_setup
 SERVER_ADDR = platform_setup.SERVER_ADDR
 SERVER_PORT = platform_setup.SERVER_PORT
 DEBUG       = platform_setup.DEBUG
-DEFAULT_LOOP_PY_TIMEOUT_MS = 5000
+DEFAULT_LOOP_PY_TIMEOUT_MS = 1000
 
 if DEBUG:
     print("INSIDE MODULE name='%s' " % ('poly_app',))
@@ -81,6 +101,8 @@ except ImportError:
 ht_sensor = AM2315()
 ht_sensor.init()
 
+class TimeoutException(Exception):
+    pass
 
 ################################################################################
 # APPLICATION CODE
@@ -154,22 +176,25 @@ class PolyServer(WebApp):
         #acquire a humidity and temperature sample
         ht_sensor.get_data(d)  #adds fields 'humid', 'temp'
         context.send_json(d)
+    
+    def __init__(self, *args,**kwargs):
+        super().__init__(*args, **kwargs)  #IMPORTANT call parent constructor
+        self._loop_timer = machine.Timer(0)
         
     def run(self, control_loop_period = 10.0):
         import loop
-        t0 = time.monotonic()
-        t_last_ctrl_loop = time.monotonic()
+        t0 = time_monotonic()
+        t_last_ctrl_loop = time_monotonic()
         while True:
             #handle any waiting requests
             server_has_timedout = self.serve_once()
-            t_now = time.monotonic()
+            t_now = time_monotonic()
             if (t_now - t_last_ctrl_loop) > control_loop_period:
+                t_last_ctrl_loop = t_now
                 try:
                     print("RUNNING CONTROL LOOP")
                     self.init_loop_timeout()
                     loop.run(t_now)
-                    self.deinit_loop_timeout()
-                    t_last_ctrl_loop = t_now
                 except Exception as exc:
                     msg = "Exception caught in 'PolyServer.run' while running loop.py"
                     #print out message and exception/traceback
@@ -185,12 +210,12 @@ class PolyServer(WebApp):
                         entry.write(msg)
                         entry.write_exception(exc)
                 finally:
+                    self.deinit_loop_timeout()
                 
     def init_loop_timeout(self, period = DEFAULT_LOOP_PY_TIMEOUT_MS):
         def timeout_callback(t):
-            machine.reset()
-
-        self._loop_timer = machine.Timer(0)
+            schedule_exc(TimeoutException("Timeout while running loop.py"))
+            
         self._loop_timer.init(period   = period,
                               mode     = machine.Timer.ONE_SHOT,
                               callback = timeout_callback)

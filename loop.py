@@ -15,4 +15,4 @@ def run(t_now):
     #acquire a humidity and temperature sample
     ht_sensor.get_data(d)  #adds fields 'humid', 'temp'
     print("loop.run:\n\tt_now: %f\n\tDATA: %r" % (t_now,d))
-    time.sleep(10)
+    time.sleep(2.0)  #FIXME this is for testing timeouts only
