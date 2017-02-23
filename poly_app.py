@@ -179,7 +179,7 @@ class PolyServer(WebApp):
     
     def __init__(self, *args,**kwargs):
         super().__init__(*args, **kwargs)  #IMPORTANT call parent constructor
-        self._loop_timer = machine.Timer(0)
+        #self._loop_timer = machine.Timer(0) #FIXME no machine.Timer on ESP32
         
     def run(self, control_loop_period = 10.0):
         import loop
@@ -213,15 +213,17 @@ class PolyServer(WebApp):
                     self.deinit_loop_timeout()
                 
     def init_loop_timeout(self, period = DEFAULT_LOOP_PY_TIMEOUT_MS):
-        def timeout_callback(t):
-            schedule_exc(TimeoutException("Timeout while running loop.py"))
-            
-        self._loop_timer.init(period   = period,
-                              mode     = machine.Timer.ONE_SHOT,
-                              callback = timeout_callback)
+        pass #FIXME no machine.Timer on ESP32
+#        def timeout_callback(t):
+#            schedule_exc(TimeoutException("Timeout while running loop.py"))
+#            
+#        self._loop_timer.init(period   = period,
+#                              mode     = machine.Timer.ONE_SHOT,
+#                              callback = timeout_callback)
         
     def deinit_loop_timeout(self):
-        self._loop_timer.deinit()
+        pass #FIXME no machine.Timer on ESP32
+        #self._loop_timer.deinit()
         
 ################################################################################
 # MAIN

@@ -33,8 +33,8 @@ PLATFORM = sys.platform
 #if DEBUG:
 #    print("DETECTED PLATFORM: %s" % PLATFORM)
 # ------------------------------------------------------------------------------
-# ESP8266
-if PLATFORM == 'esp8266':
+# ESP8266 or ESP32
+if PLATFORM in ['esp8266','esp32']:
     import network_setup
     #if DEBUG:
     #    print("RUNNING network_setup.do_connect:")
