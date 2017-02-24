@@ -115,6 +115,14 @@ class PolyServer(WebApp):
         
     @route("/test", methods=['GET'])
     def test(self, context):
+        global DEBUG
+        if DEBUG:
+            print("INSIDE ROUTE HANDLER name='%s' " % ('test'))
+            try:
+                from micropython import mem_info
+                mem_info()
+            except ImportError:
+                pass
         context.send_file("html/test.html")
         
     @route("/config", methods=['GET','POST'])
@@ -147,6 +155,14 @@ class PolyServer(WebApp):
         
     @route("/exc", methods=['PUT'])
     def exc(self, context):
+        global DEBUG
+        if DEBUG:
+            print("INSIDE ROUTE HANDLER name='%s' " % ('exc'))
+            try:
+                from micropython import mem_info
+                mem_info()
+            except ImportError:
+                pass
         context.send_json({})
         raise Exception("this is a test")
     
@@ -160,10 +176,23 @@ class PolyServer(WebApp):
             pin_value = json.loads(context.request.args['pin_value'][0]) #converts to int
             pin_value = bool(pin_value)
             if pin_type == "digital_out":
-                PINS[pin_num] = pin = machine.Pin(pin_num,machine.Pin.OUT)
-                pin.value(pin_value)
+                if DEBUG:
+                    print("SETTING pin_type = 'digital_out' to pin_value = %s" % pin_value)
+                try:
+                    if DEBUG:
+                        print("USING HARDWARE INTERFACE machine.Pin")
+                    PINS[pin_num] = pin = machine.Pin(pin_num,machine.Pin.OUT)
+                    pin.value(pin_value)
+                except ImportError:
+                    #works in micropython and PC
+                    if DEBUG:
+                        print("USING HARDWARE INTERFACE machine.Pin")
+                    PINS[pin_num] = pin = machine.Pin(pin_num,machine.Pin.OUT)
+                    pin.value(pin_value)
         elif context.request.method == 'GET':
-            #works in micropython and PC
+            if DEBUG:
+                print("GETTING pin_type = '%s'" % pin_type)
+                print("USING HARDWARE INTERFACE machine.Pin")
             pin = PINS[pin_num]
             pin_value = pin.value()
         pin_value = 1 if pin_value else 0

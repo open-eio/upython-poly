@@ -1,0 +1,20 @@
+<html>
+  <head>
+    {{#PRODUCTION}}
+      <style>{{{css}}}</style>
+    {{/PRODUCTION}}
+    {{#DEVELOPMENT}}
+      <link rel="stylesheet" type="text/css" href="/build.css" />
+    {{/DEVELOPMENT}}
+  </head>
+  <body>
+    <div id="target"></div>
+    
+    {{#PRODUCTION}}
+      <script>{{{js}}}</script>
+    {{/PRODUCTION}}
+    {{#DEVELOPMENT}}
+      <script src="http://localhost:5000/build.js"></script>
+    {{/DEVELOPMENT}}
+  </body>
+</html>

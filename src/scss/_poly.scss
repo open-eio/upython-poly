@@ -1,0 +1,177 @@
+// remove craziness
+@-ms-viewport{
+  width: device-width;
+}
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+html, body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@import 'fonts';
+
+// $main-font: 'Helvetica' 'Arial';
+// $accent-font: 'Helvetica' 'Arial';
+
+// Global Vars
+$mobile-width: 90%;
+$element-border-radius: 8px;
+$element-padding: 25px;
+$small-border-radius: 4px;
+
+// Global Colors
+$purple: #6C429B;
+$green: #6DBF67;
+$yellow: #FEC40F;
+$blue: #47C0B9;
+$red: #EE565F;
+$navy: #23385F;
+$background: #F4F5F8;
+$gray: #CCC;
+
+$bold-weight: 600;
+
+
+body{
+  background-color: $background;
+  padding-bottom: 50px;
+}
+
+html, body, input, textarea, select, option {
+  font-family: $main-font;
+  color: $navy;
+}
+
+
+// RIBBON
+.ribbon{
+  width: 100%;
+  display: flex;
+}
+
+$ribbonColorNames: yellow red purple blue navy;
+$ribbonColors: $yellow $red $purple $blue $navy;
+$ribbonColorWidths: 7 2 3 4 2;
+$ribbonColorWidthsAnimate: 1 8 11 6 10;
+
+$ribbonColorIndex: 1;
+@each $ribbonColorName in $ribbonColorNames {
+  $color: nth($ribbonColors, $ribbonColorIndex);
+  $width: nth($ribbonColorWidths, $ribbonColorIndex);
+  .ribbon-#{$ribbonColorName}{
+    background-color: $color;
+    flex-grow: $width;
+    transition: flex-grow 10s;
+  }
+  $ribbonColorIndex: $ribbonColorIndex + 1;
+}
+
+$ribbonColorIndex: 1;
+@each $ribbonColorName in $ribbonColorNames {
+  $color: nth($ribbonColors, $ribbonColorIndex);
+  $width: nth($ribbonColorWidths, $ribbonColorIndex);
+  $animateWidth: nth($ribbonColorWidthsAnimate, $ribbonColorIndex);
+  .ribbon-#{$ribbonColorName}-animate{
+    animation: ribbon-loading-#{$ribbonColorName} 1.8s ease-in-out infinite alternate;
+  }
+  @keyframes ribbon-loading-#{$ribbonColorName}{
+    0% {flex-grow: $width};
+    100% {flex-grow: $animateWidth};
+  }
+  $ribbonColorIndex: $ribbonColorIndex + 1;
+}
+
+
+// BUTTONS
+$colorNames: purple green yellow blue red navy;
+$colors: $purple $green $yellow $blue $red $navy;
+
+$colorIndex: 1;
+@each $colorName in $colorNames {
+  $color: nth($colors, $colorIndex);
+  $accent:darken($color, 20);
+  .button-#{$colorName}{
+    font-family: $accent-font;
+    background-color: $color;
+    color: white;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-radius: $small-border-radius;
+    border: 0px;
+    padding: 8px 11px 6px;
+    box-shadow: 0px 2px 0px $accent;
+    outline: none !important;
+    &:hover{
+      background-color: lighten($color, 5);
+    }
+    &:active{
+      box-shadow: 0px 1px 0px $accent;
+      // border-top: 1px solid rgba(0,0,0,0);
+      // margin-bottom: -1px;
+      transform: translate(0px, 1px);
+      position: relative;
+    }
+  }
+  $colorIndex: $colorIndex + 1;
+}
+
+.button-big{
+  padding: 12px 15px 10px
+}
+
+// INPUTS
+
+input[type=text], input[type=password], input[type=email], textarea, .input{
+  padding: 10px;
+  border: 1px solid $gray;
+  border-radius: $small-border-radius;
+  -webkit-appearance: none;
+  &:focus{
+    outline: none;
+    border-color: $purple;
+  }
+}
+
+h1{
+  font-family: $accent-font;
+  font-size: 22px;
+  text-transform: uppercase;
+}
+
+
+// ELEMENTS
+
+.main-element{
+  background-color: white;
+  max-width: 900px;
+  width: $mobile-width;
+  margin: 0 auto;
+  border-radius: $element-border-radius;
+  &.main-element-transparent{
+    background-color: rgba(0,0,0,0);
+  }
+}
+
+.bot-header{
+  h1{
+    margin: 0px;
+  }
+}
+
+.bot-header-inner{
+  padding: $element-padding;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+
+
+
+

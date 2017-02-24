@@ -1,0 +1,56 @@
+@import 'normalize';
+@import 'poly';
+
+// Header
+$header-height: 65px;
+.header-inner{
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px $element-padding 3px;
+  flex-grow: 1;
+}
+
+.header{
+  height: $header-height;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  width: 100%;
+  top: 0px;
+  z-index: 1000000;
+}
+
+.header-links{
+  *:not(:first-child){
+    margin-left: 8px;
+  }
+}
+
+.header-spacer{
+  height: calc(#{$header-height} + 5vh);
+  max-height: calc(#{$header-height} + 35px);
+  width: 100%;
+}
+
+.main{
+  margin: 60px 5% 120px;
+  text-align: center;
+}
+
+.device{
+  display: inline-block;
+  margin: 0px 20px;
+}
+
+.device-icon{
+  height: 60px;
+  display: block;
+  margin-bottom: 12px;
+  svg{
+    height: 100%;
+  }
+}
+
+
