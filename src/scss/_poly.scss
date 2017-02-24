@@ -13,10 +13,10 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
-@import 'fonts';
+// @import 'fonts';
 
-// $main-font: 'Helvetica' 'Arial';
-// $accent-font: 'Helvetica' 'Arial';
+$main-font: 'Helvetica' 'Arial';
+$accent-font: 'Helvetica' 'Arial';
 
 // Global Vars
 $mobile-width: 90%;
