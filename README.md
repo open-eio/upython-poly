@@ -15,6 +15,8 @@ Set up a `.env` file, which contains:
 ### Build and flash the micropython firmware
 ...on the [ESP8266](https://github.com/micropython/micropython/tree/master/esp8266) 
 or [ESP32](https://github.com/micropython/micropython-esp32/tree/esp32/esp32) device.
+If using the ESP32, make sure you use our special fork of the firmware, which has been optimized for our device (more RAM, bigger VFS): https://github.com/open-eio/micropython-esp32/
+
 
 Ref.
  - Adafruit's [Building and Running MicroPython on the ESP8266](https://learn.adafruit.com/building-and-running-micropython-on-the-esp8266/overview)
