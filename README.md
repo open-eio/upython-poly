@@ -14,9 +14,9 @@ npm install
 ## Development
 
 Next, you'll need to set up a `.env` file, which contains:
-`FEATHER_ADDRESS` the local port where the feather is located (if attached) for pushing new builds
-`LOCAL_DEV_SERVER_ADDRESS` IP addresses for the local development server (the python server that runs from inside this repo)
-`REMOTE_DEV_SERVER_ADDRESS` IP address for a remote development server (for if you want to edit your frontend on your local machine but have API requests go to a feather on your local network).
+* `FEATHER_ADDRESS` the local port where the feather is located (if attached) for pushing new builds
+* `LOCAL_DEV_SERVER_ADDRESS` IP addresses for the local development server (the python server that runs from inside this repo)
+* `REMOTE_DEV_SERVER_ADDRESS` IP address for a remote development server (for if you want to edit your frontend on your local machine but have API requests go to a feather on your local network).
 
 You can start the development server in two modes:
 ```
