@@ -1,7 +1,13 @@
 # This file is executed on every boot (including wake-boot from deepsleep)
 import esp
-esp.osdebug(None)
+if hasattr(esp,'osdebug'):  #not yet available on ESP32 port
+    esp.osdebug(None)
 import gc
-import webrepl
-webrepl.start()
+import network #needed for sockets on ESP32
+try:
+    import webrepl
+    webrepl.start()
+except ImportError:
+    pass
+    
 gc.collect()
