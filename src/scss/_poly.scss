@@ -13,6 +13,11 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
+@import 'fonts';
+
+// $main-font: 'Helvetica' 'Arial';
+// $accent-font: 'Helvetica' 'Arial';
+
 // Global Vars
 $mobile-width: 90%;
 $element-border-radius: 8px;
@@ -31,10 +36,6 @@ $gray: #CCC;
 
 $bold-weight: 600;
 
-// @import 'fonts';
-
-$main-font: 'Apercu';
-$accent-font: 'StratumNo2';
 
 body{
   background-color: $background;

@@ -34,47 +34,23 @@ $header-height: 65px;
   width: 100%;
 }
 
-.header-error{
-  position: fixed;
-  width: 100%;
-  height: $header-height;
-  background-color: $red;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-left: $element-padding;
-  padding-right: 34px;
-  font-size: 14px;
-  transform-origin: left top;
+.main{
+  margin: 60px 5% 120px;
+  text-align: center;
 }
 
-
-.header-error-transition-enter {
-  transform: rotateX(90deg);
+.device{
+  display: inline-block;
+  margin: 0px 20px;
 }
 
-.header-error-transition-enter.header-error-transition-enter-active {
-  transform: rotateX(0deg);
-  transition: transform 300ms ease-in;
-}
-
-.header-error-transition-leave {
-  transform: rotateX(0deg);
-}
-
-.header-error-transition-leave.header-error-transition-leave-active {
-  transform: rotateX(90deg);
-  transition: transform 300ms ease-in;
-}
-
-
-.header-error-dismiss{
-  &:before{
-    position: absolute;
-    top: 25px;
-    right: 12px;
-    font-size: 20px;
-    cursor: pointer;
+.device-icon{
+  height: 60px;
+  display: block;
+  margin-bottom: 12px;
+  svg{
+    height: 100%;
   }
 }
+
+

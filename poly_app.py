@@ -1,6 +1,6 @@
 ################################################################################
 # STANDARD LIB IMPORTS
-import sys, os, time
+import sys, os, time, gc
 try:
     from collections import OrderedDict
 except ImportError:
@@ -39,30 +39,32 @@ if DEBUG:
 # HARDWARE INTERFACES
 #-------------------------------------------------------------------------------
 PINS = OrderedDict()
-try:
-    import board, nativeio #CircuitPython specific
-    PINS[0]  = board.GPIO0
-    PINS[2]  = board.GPIO2
-    PINS[4]  = board.GPIO4
-    PINS[5]  = board.GPIO5
-    PINS[12] = board.GPIO12
-    PINS[13] = board.GPIO13
-    PINS[14] = board.GPIO14
-    PINS[15] = board.GPIO15
-    #set all pins to input, safest state
-    for pin_num, board_pin in PINS.items():
-        with nativeio.DigitalInOut(board_pin) as d_in:
-            d_in.switch_to_input()
+#try:
+#    import board, nativeio #CircuitPython specific
+#    PINS[0]  = board.GPIO0
+#    PINS[2]  = board.GPIO2
+#    #PINS[4]  = board.GPIO4 #FIXME using this pin gives occasional 
+#                            #"ValueError: Pin GPIO4 in use"
+#    PINS[5]  = board.GPIO5
+#    PINS[12] = board.GPIO12
+#    PINS[13] = board.GPIO13
+#    PINS[14] = board.GPIO14
+#    PINS[15] = board.GPIO15
+#    #set all pins to input, safest state
+#    for pin_num, board_pin in PINS.items():
+#        with nativeio.DigitalInOut(board_pin) as d_in:
+#            d_in.switch_to_input()
 #    with nativeio.DigitalInOut(PINS[2]) as d_out:
 #            d_out.switch_to_output()
 #            d_out.value =
+#except ImportError:
+try:
+    import machine #micropython specific
 except ImportError:
-    try:
-        import machine #micropython specific
-    except ImportError:
-        import mock_machine as machine #a substitute for PC testing
-    pin_numbers = (0, 2, 4, 5, 12, 13, 14, 15)
-    PINS = OrderedDict((i,machine.Pin(i, machine.Pin.IN)) for i in pin_numbers)
+    import mock_machine as machine #a substitute for PC testing
+        
+pin_numbers = (0, 2, 4, 5, 12, 13, 14, 15)
+PINS = OrderedDict((i,machine.Pin(i, machine.Pin.IN)) for i in pin_numbers)
     
 #configure humidity/temperature sensor interface
 try:
@@ -88,32 +90,49 @@ class PolyServer(WebApp):
                 mem_info()
             except ImportError:
                 pass
-                
-        #open the template files
-        def gen_index_tmp(chunksize = 64):
-            with open("html/index.html", 'r') as f:
-                while True:
-                    chunk = f.read(chunksize)
-                    if not chunk:
-                        return
-                    yield chunk
-        index_tmp = gen_index_tmp()
-        #finally render the view
-        context.render_template(index_tmp)
+        context.send_file("html/index.html")
         
     @route("/test", methods=['GET'])
-    def index(self, context):
+    def test(self, context):
         global DEBUG
         if DEBUG:
-            print("INSIDE ROUTE HANDLER name='%s' " % ('index'))
+            print("INSIDE ROUTE HANDLER name='%s' " % ('test'))
             try:
                 from micropython import mem_info
                 mem_info()
             except ImportError:
                 pass
-        tmp = LazyTemplate.from_file("html/test.html")
-        #finally render the view
-        context.render_template(tmp)
+        context.send_file("html/test.html")
+        
+    @route("/logs/PolyServer.yaml", methods=['GET','DELETE'])
+    def logs(self, context):
+        global DEBUG
+        if DEBUG:
+            print("INSIDE ROUTE HANDLER name='%s' " % ('logs/PolyServer.yaml'))
+            try:
+                from micropython import mem_info
+                mem_info()
+            except ImportError:
+                pass
+        if context.request.method == 'GET':
+            context.send_file("logs/PolyServer.yaml")
+        elif context.request.method == 'DELETE':
+            os.remove("logs/PolyServer.yaml")
+            open("logs/PolyServer.yaml",'w').close()
+            context.send_json({})
+        
+    @route("/exc", methods=['PUT'])
+    def exc(self, context):
+        global DEBUG
+        if DEBUG:
+            print("INSIDE ROUTE HANDLER name='%s' " % ('exc'))
+            try:
+                from micropython import mem_info
+                mem_info()
+            except ImportError:
+                pass
+        context.send_json({})
+        raise Exception("this is a test")
     
     @route("/pins", methods=['GET','PUT'])
     def pins(self, context):
@@ -137,13 +156,17 @@ class PolyServer(WebApp):
                 if DEBUG:
                     print("SETTING pin_type = 'digital_out' to pin_value = %s" % pin_value)
                 try:
-                    #CircuitPython specific
-                    import nativeio
+#                    #CircuitPython specific
+#                    import nativeio
+#                    if DEBUG:
+#                        print("USING HARDWARE INTERFACE nativeio.DigitalInOut")
+#                    with nativeio.DigitalInOut(PINS[pin_num]) as d_out:
+#                        d_out.switch_to_output()
+#                        d_out.value = pin_value
                     if DEBUG:
-                        print("USING HARDWARE INTERFACE nativeio.DigitalInOut")
-                    with nativeio.DigitalInOut(PINS[pin_num]) as d_out:
-                        d_out.switch_to_output()
-                        d_out.value = pin_value
+                        print("USING HARDWARE INTERFACE machine.Pin")
+                    PINS[pin_num] = pin = machine.Pin(pin_num,machine.Pin.OUT)
+                    pin.value(pin_value)
                 except ImportError:
                     #works in micropython and PC
                     if DEBUG:
@@ -153,22 +176,22 @@ class PolyServer(WebApp):
         elif context.request.method == 'GET':
             if DEBUG:
                 print("GETTING pin_type = '%s'" % pin_type)
-            try:
-                #CircuitPython specific
-                import nativeio
-                if DEBUG:
-                    print("USING HARDWARE INTERFACE nativeio.DigitalInOut")
-                with nativeio.DigitalInOut(PINS[pin_num]) as d:
-                    pin_value = d.value
-            except ImportError:
-                #works in micropython and PC
-                if DEBUG:
-                    print("USING HARDWARE INTERFACE machine.Pin")
-                pin = PINS[pin_num]
-                pin_value = pin.value()
+#            try:
+#                #CircuitPython specific
+#                import nativeio
+#                if DEBUG:
+#                    print("USING HARDWARE INTERFACE nativeio.DigitalInOut")
+#                with nativeio.DigitalInOut(PINS[pin_num]) as d:
+#                    pin_value = d.value
+#            except ImportError:
+            #works in micropython and PC
+            if DEBUG:
+                print("USING HARDWARE INTERFACE machine.Pin")
+            pin = PINS[pin_num]
+            pin_value = pin.value()
         pin_value = 1 if pin_value else 0
         resp = {'pin_num': pin_num, 'pin_value': pin_value}
-        context.send_json_response(resp)
+        context.send_json(resp)
         
     @route("/am2315", methods=['GET'])
     def am2315(self, context):
@@ -185,7 +208,7 @@ class PolyServer(WebApp):
         #acquire a humidity and temperature sample
         ht_sensor.get_data(d)  #adds fields 'humid', 'temp'
         print("SENDING DATA AS JSON: %r" % (d,))
-        context.send_json_response(d)
+        context.send_json(d)
         
 ################################################################################
 # MAIN
@@ -193,6 +216,9 @@ class PolyServer(WebApp):
 #if __name__ == "__main__":
 #---------------------------------------------------------------------------
 # Create application instance binding to localhost on port 9999
+time.sleep(2.0)
+gc.collect()
+
 app = PolyServer(server_addr = SERVER_ADDR,
                  server_port = SERVER_PORT,
                )
