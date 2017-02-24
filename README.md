@@ -21,6 +21,7 @@ If using the ESP32, make sure you use our special fork of the firmware, which ha
 Ref.
  - Adafruit's [Building and Running MicroPython on the ESP8266](https://learn.adafruit.com/building-and-running-micropython-on-the-esp8266/overview)
  - Adafruit's [MicroPython ESP32 building and loading firmware with Tony D!](https://www.youtube.com/watch?v=qa2406iiSbI)
+  ***NOTE: only hold BOOT button while running `sudo make erase` and `sudo make deploy`, you can release once process is started*** 
 
 
 ### Install the `pawpaw` package dependency
