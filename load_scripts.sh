@@ -4,7 +4,7 @@ echo $FEATHER_ADDRESS
 ampy -p $FEATHER_ADDRESS -b 115200 put SECRET_CONFIG.json
 ampy -p $FEATHER_ADDRESS -b 115200 mkdir html
 ampy -p $FEATHER_ADDRESS -b 115200 put ./html/404.html html/404.html
-ampy -p $FEATHER_ADDRESS -b 115200 put ./html/index.html html/index.html
+#ampy -p $FEATHER_ADDRESS -b 115200 put ./html/index.html html/index.html
 ampy -p $FEATHER_ADDRESS -b 115200 put ./html/test.html html/test.html
 ampy -p $FEATHER_ADDRESS -b 115200 mkdir logs
 ampy -p $FEATHER_ADDRESS -b 115200 put platform_setup.mpy
@@ -22,6 +22,6 @@ ampy -p $FEATHER_ADDRESS -b 115200 put ./pawpaw/auto_tree_format.mpy pawpaw/auto
 ampy -p $FEATHER_ADDRESS -b 115200 put ./pawpaw/url_tools.mpy pawpaw/url_tools.mpy
 ampy -p $FEATHER_ADDRESS -b 115200 put ./pawpaw/web_app.mpy pawpaw/web_app.mpy
 ampy -p $FEATHER_ADDRESS -b 115200 put poly_app.mpy
-ampy -p $FEATHER_ADDRESS -b 115200 put loop.mpy
-ampy -p $FEATHER_ADDRESS -b 115200 put main.mpy
-ampy -p $FEATHER_ADDRESS -b 115200 put boot.mpy
+ampy -p $FEATHER_ADDRESS -b 115200 put loop.py
+ampy -p $FEATHER_ADDRESS -b 115200 put main.py
+ampy -p $FEATHER_ADDRESS -b 115200 put boot.py
