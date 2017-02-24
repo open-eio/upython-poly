@@ -45,4 +45,6 @@ npm run build
 ```
 and presto! (hopefully presto) your app will roll up in a tiny ball and go cower inside one file in `html/index.html`. That means that if you run `./load-scripts` after `npm run build` your changes will push directly to the attached feather, no extra steps!
 
+When built, the `SERVER_ADDRESS` variable will default to sending requests just to the root where the page is served from, which will be the case once `index.html` is being served from the device.
+
 
