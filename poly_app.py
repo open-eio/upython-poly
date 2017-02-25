@@ -56,6 +56,15 @@ if DEBUG:
         mem_info()
     except ImportError:
         pass
+
+################################################################################
+# FILE SYSTEM SETUP
+#-------------------------------------------------------------------------------
+LOGDIR = "logs"  #nested directories are not supported
+if not LOGDIR in os.listdir():
+    print("Running os.mkdir('%s')" % logs)
+    os.mkdir(LOGDIR)
+
 ################################################################################
 # HARDWARE INTERFACES
 #-------------------------------------------------------------------------------
@@ -207,6 +216,7 @@ class PolyServer(WebApp):
         context.send_json(d)
     
     def __init__(self, *args,**kwargs):
+        kwargs['log_dir'] = LOGDIR
         super().__init__(*args, **kwargs)  #IMPORTANT call parent constructor
         #self._loop_timer = machine.Timer(0) #FIXME no machine.Timer on ESP32
         
